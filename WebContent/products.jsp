@@ -65,8 +65,7 @@
 
                     // Create the prepared statement and use it to
                     // UPDATE student values in the Students table.
-                    pstmt = conn
-                        .prepareStatement("UPDATE product SET name = ?, list_price = ?, categoryid = ? WHERE sku = ?");
+                    pstmt = conn.prepareStatement("UPDATE product SET name = ?, list_price = ?, categoryid = ? WHERE sku = ?");
 
                     pstmt.setString(1, request.getParameter("name"));
                     pstmt.setInt(2, Integer.parseInt(request.getParameter("list_price")));
@@ -111,6 +110,8 @@
                 rs = statement.executeQuery("SELECT * FROM product");
             %>
             
+            <%-- Retrieve Category names and IDs --%>
+            
             <!-- Add an HTML table header row to format the results -->
             <table>
             <tr>
@@ -123,7 +124,7 @@
             <tr>
                 <form action="products.jsp" method="POST">
                     <input type="hidden" name="action" value="insert"/>
-                    <td>&nbsp;</td>
+                    <td><input value="" name="sku" size="5"/></td>
                     <td><input value="" name="name" size="15"/></td>
                     <td><input value="" name="list_price" size="5"/></td>
                     <td><input value="" name="categoryid" size="3"/></td>
@@ -140,7 +141,7 @@
             <tr>
                 <form action="products.jsp" method="POST">
                     <input type="hidden" name="action" value="update"/>
-                    <input type="hidden" name="id" value="<%=rs.getInt("sku")%>"/>
+                    <input type="hidden" name="sku" value="<%=rs.getInt("sku")%>"/>
 
                 <%-- Get the id --%>
                 <td>
@@ -154,16 +155,16 @@
 
                  <%-- Get the id --%>
                 <td>
-                    <%=rs.getInt("list_price")%>
+                    <input value="<%=rs.getInt("list_price")%>" name="list_price" size="5"/>
                 </td>
                 
                  <%-- Get the id --%>
                 <td>
-                    <%=rs.getInt("categoryid")%>
+                    <input value="<%=rs.getInt("categoryid")%>" name="categoryid" size="3"/>
                 </td>
 
                 <%-- Button --%>
-                <td><input type="submit" value="Update"></td>
+                <td><input type="submit" value="update"></td>
                 </form>
                 <form action="products.jsp" method="POST">
                     <input type="hidden" name="action" value="delete"/>
