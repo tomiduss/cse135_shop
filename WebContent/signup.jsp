@@ -12,8 +12,22 @@
         <td>
             <%-- Import the java.sql package --%>
             <%@ page import="java.sql.*"%>
-            <%@ include file="connect.jsp" %>            
+                        
+            <%-- -------- Open Connection Code -------- --%>
+            <%
             
+            Connection conn = null;
+            PreparedStatement pstmt = null;
+            
+            try {
+                // Registering Postgresql JDBC driver with the DriverManager
+                Class.forName("org.postgresql.Driver");
+
+                // Open a connection to the database using DriverManager
+                conn = DriverManager.getConnection(
+                    "jdbc:postgresql://localhost/postgres?" +
+                    "user=postgres&password=admin");
+            %>
             
             <%-- -------- INSERT Code -------- --%>
             <%
