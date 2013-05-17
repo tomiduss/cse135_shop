@@ -17,6 +17,7 @@
             
             Connection conn = null;
             PreparedStatement pstmt = null;
+            ResultSet rs = null;
             
             try {
                 // Registering Postgresql JDBC driver with the DriverManager
@@ -106,7 +107,7 @@
 
                 // Use the created statement to SELECT
                 // the student attributes FROM the Student table.
-                ResultSet rs = statement.executeQuery("SELECT * FROM product");
+                rs = statement.executeQuery("SELECT * FROM product");
             %>
             
             <%-- Retrieve Category names and IDs --%>
