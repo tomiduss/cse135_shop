@@ -14,20 +14,21 @@
             <%@ page import="java.sql.*"%>
             <%-- -------- Open Connection Code -------- --%>
             <%
-            
-            Connection conn = null;
-            PreparedStatement pstmt = null;
-            ResultSet rs = null;
-            
-            try {
-                // Registering Postgresql JDBC driver with the DriverManager
-                Class.forName("org.postgresql.Driver");
+				
+				Connection conn = null;
+				PreparedStatement pstmt = null;
+				
+				try {
+				    // Registering Postgresql JDBC driver with the DriverManager
+				    Class.forName("org.postgresql.Driver");
+				
+				    // Open a connection to the database using DriverManager
+				    conn = DriverManager.getConnection(
+				        "jdbc:postgresql://localhost/postgres?" +
+				        "user=postgres&password=leviathan");
+			%>
+     
 
-                // Open a connection to the database using DriverManager
-                conn = DriverManager.getConnection(
-                    "jdbc:postgresql://localhost/postgres?" +
-                    "user=postgres&password=admin");
-            %>
             
             <%-- -------- INSERT Code -------- --%>
             <%
@@ -107,7 +108,7 @@
 
                 // Use the created statement to SELECT
                 // the student attributes FROM the Student table.
-                rs = statement.executeQuery("SELECT * FROM product");
+                ResultSet rs = statement.executeQuery("SELECT * FROM product");
             %>
             
             <%-- Retrieve Category names and IDs --%>
