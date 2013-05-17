@@ -113,6 +113,11 @@
             	else {
             		product_rs = statement.executeQuery("SELECT * FROM product");
             	}
+            	
+            	String search = request.getParameter("search");
+            	if(search != null) {
+            		product_rs = statement.executeQuery("SELECT * FROM product WHERE name LIKE '" + search + "%'");
+            	}
                 
             %>
             
@@ -130,9 +135,10 @@
             %>
             <!-- Add an HTML table header row to format the results -->
             <table>
-            <tr><td>Search:</td></tr>
-            
-            <tr><td>
+            <tr><td height="50" valign="top"><form action="products.jsp" method="POST"><input name="search" value="" size="50"/>    
+            <input type="submit" value="Search"/></form></td>
+            </tr>
+            <tr><td valign="top">
             <table>
             <tr>
             <td width=200>
@@ -157,7 +163,7 @@
        		</table></td>
        		<td width=100>
        		</td>
-            <td>
+            <td valign="top">
             <table>
             <tr>
                 <td>SKU</td>
