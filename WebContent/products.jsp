@@ -14,7 +14,6 @@
             <%@ page import="java.sql.*"%>
             <%-- -------- Open Connection Code -------- --%>
             <%
-				
 				Connection conn = null;
 				PreparedStatement pstmt = null;
 				ResultSet rs = null;
@@ -28,9 +27,8 @@
 				        "jdbc:postgresql://localhost/postgres?" +
 				        "user=postgres&password=leviathan");
 			%>
-     
+    
 
-            
             <%-- -------- INSERT Code -------- --%>
             <%
                 String action = request.getParameter("action");
