@@ -6,7 +6,7 @@
 <td colspan=8>
 <%  if(session.getAttribute("username") != null) {
 %>
-Hello, <%= session.getAttribute("username") + "!" %>
+Hello, <%= session.getAttribute("username") + "!"%>
 <% } %>
 </td>
 <tr>

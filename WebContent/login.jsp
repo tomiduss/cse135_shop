@@ -63,6 +63,7 @@
                 if (rs.next()) {
                 	session.setAttribute("username", username);
                 	session.setAttribute("owner", rs.getBoolean("owner"));
+                	session.setAttribute("id", rs.getInt("id"));
                 	
                 	%> <%= "Logged in as " + username + "." %> <%
                 }

@@ -1,9 +1,11 @@
 a{
-	color:green
+	color:green;
 }
 table{
-	cellpadding:5
+	cellpadding:5;
+	border:0px solid black;
 }
 body{
-	font-family:Verdana, Geneva, sans-serif
+	font-family:Verdana, Geneva, sans-serif;
+	font-size:10px;
 }
