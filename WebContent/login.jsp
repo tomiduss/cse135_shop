@@ -44,7 +44,7 @@
                 // Open a connection to the database using DriverManager
                 conn = DriverManager.getConnection(
                     "jdbc:postgresql://localhost/postgres?" +
-                    "user=postgres&password=admin");
+                    "user=postgres&password=leviathan");
             %>
             
             <%-- -------- SELECT Statement Code -------- --%>
