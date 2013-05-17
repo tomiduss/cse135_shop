@@ -31,12 +31,11 @@
 			
             
             <%-- -------- Open Connection Code -------- --%>
-            <%
-            
-            Connection conn = null;
+			<% 
+			Connection conn = null;
             PreparedStatement pstmt = null;
             ResultSet rs = null;
-           
+            
             try {
                 // Registering Postgresql JDBC driver with the DriverManager
                 Class.forName("org.postgresql.Driver");
@@ -46,6 +45,7 @@
                     "jdbc:postgresql://localhost/postgres?" +
                     "user=postgres&password=leviathan");
             %>
+            
             
             <%-- -------- SELECT Statement Code -------- --%>
             <%
