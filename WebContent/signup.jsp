@@ -31,7 +31,8 @@
             
             <%-- -------- INSERT Code -------- --%>
             <%
-                String action = request.getParameter("action");
+                            	
+            	String action = request.getParameter("action");
                 // Check if an insertion is requested
                 if (action != null && action.equals("insert")) {
 
@@ -40,8 +41,7 @@
 
                     // Create the prepared statement and use it to
                     // INSERT student values INTO the students table.
-                    pstmt = conn
-                    .prepareStatement("INSERT INTO shop_user (username, owner, age, state) VALUES (?, ?, ?, ?)");
+                    pstmt = conn.prepareStatement("INSERT INTO shop_user (username, owner, age, state) VALUES (?, ?, ?, ?)");
 
                     pstmt.setString(1, request.getParameter("username"));
                     pstmt.setBoolean(2, Boolean.parseBoolean(request.getParameter("role")));
@@ -140,10 +140,9 @@
                 // Close the Connection
                 conn.close();
             } catch (SQLException e) {
-
-                // Wrap the SQL exception in a runtime exception to propagate
-                // it upwards
-                throw new RuntimeException(e);
+				// Provide the user with an error message if there's an exception
+				
+                %><p><%=e.getMessage()%></p><%
             }
             finally {
                 // Release resources in a finally block in reverse-order of
