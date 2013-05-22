@@ -35,7 +35,7 @@
 <%-- -------- SELECT Statement Code -------- --%>
 <!-- -----------------Using GET ----------------------  --> 
             <%
-            	if (request.getParameter("method") = "GET"){
+            	if (request.getParameter("query") = "get"){
             		PreparedStatement statement = conn.prepareStatement("SELECT * FROM product WHERE categoryid = ?");
             		
             		statement.setInt(1 , Integer.parseInt(request.getParameter("category_id")));
@@ -97,7 +97,7 @@
 								<% while(category_rs.next()) { %>
 								<tr>
 									<td>
-										<a href="browse.jsp" method="GET" category_id="<%=category_rs.getInt("id")%"> <%= category_rs.getString("category_name") %> </a>
+										<a href="browse.jsp" method="GET" query="get" category_id=<%=category_rs.getInt("id")%> > <%= category_rs.getString("category_name") %> </a>
 									</td>
 								</tr>								
 								<tr>

@@ -32,24 +32,33 @@
                     "user=postgres&password=leviathan");
             %>
             
- <%-- -------- SELECT Statement Code -------- --%>
+<%-- -------- SELECT Statement Code -------- --%>
+<!-- -----------------Using GET ----------------------  --> 
             <%
-                // Create the statement
-                Statement statement = conn.createStatement();
+            	if (request.getParameter("method") = "GET"){
+            		PreparedStatement statement = conn.prepareStatement("SELECT * FROM product WHERE categoryid = ?");
+            		
+            		statement.setInt(1 , Integer.parseInt(request.getParameter("category_id")));
+            		product_rs = statement.executeQuery();           		
+            		
+            		            		
+            	}else{
+		             // Create the statement
+		            Statement statement = conn.createStatement();
 				
-            	String query = request.getParameter("query");
-            	if(query != null) {
-            		product_rs = statement.executeQuery("SELECT * FROM product" + query);
-            	}
-            	else {
-            		product_rs = statement.executeQuery("SELECT * FROM product");
-            	}
-            	
-            	String search = request.getParameter("search");
-            	if(search != null) {
-            		product_rs = statement.executeQuery("SELECT * FROM product WHERE name LIKE '" + search + "%'");
-            	}
-                
+		         	String query = request.getParameter("query");
+		         	if(query != null) {
+		         		product_rs = statement.executeQuery("SELECT * FROM product" + query);
+		         	}
+		         	else {
+		         		product_rs = statement.executeQuery("SELECT * FROM product");
+		         	}
+		         	
+		         	String search = request.getParameter("search");
+		         	if(search != null) {
+		         		product_rs = statement.executeQuery("SELECT * FROM product WHERE name LIKE '" + search + "%'");
+		         	}
+               }
             %>
             
 <%-- Retrieve Category names and IDs --%>
@@ -87,13 +96,16 @@
 								</tr>
 								<% while(category_rs.next()) { %>
 								<tr>
+									<td>
+										<a href="browse.jsp" method="GET" category_id="<%=category_rs.getInt("id")%"> <%= category_rs.getString("category_name") %> </a>
+									</td>
+								</tr>								
+								<tr>
 									<td width=200>
-										<a href="browse.jsp" method="GET" categoryid="<%=category_rs.getInt("id")%"> <%= category_rs.getString("category_name") %> </a>
-										
-										<!--<form action="browse.jsp" method="POST">
+										<form action="browse.jsp" method="POST">
 											<input type="hidden" name="query"
 												value=" WHERE categoryid=<%= category_rs.getInt("id")%>" />
-											<%= category_rs.getString("category_name") %> -->
+											<%= category_rs.getString("category_name") %>
 									</td>
 									<td>
 											<input type="submit" value="Show" />
