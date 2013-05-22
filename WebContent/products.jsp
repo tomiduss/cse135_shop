@@ -132,120 +132,122 @@
             	category_rs = statement2.executeQuery("SELECT id, category_name FROM category");
             	
             
-            %>
+            %> 
             <!-- Add an HTML table header row to format the results -->
-            <table>
-            <tr><td height="50" valign="top"><form action="products.jsp" method="POST"><input name="search" value="" size="50"/>    
-            <input type="submit" value="Search"/></form></td>
-            </tr>
-            <tr><td valign="top">
-            <table>
-            <tr>
-            <td width=200>
-            <form action="products.jsp" method="POST"><input type="hidden" name="query" value=""/>
-			All products
-            </td>
-            <td>
-            <input type="submit" value="Show"/></form>
-            </td>
-            </tr>
-            <% while(category_rs.next()) { %>
-            <tr>
-            <td width=200>
-            <form action="products.jsp" method="POST"><input type="hidden" name="query" value=" WHERE categoryid=<%= category_rs.getInt("id")%>"/>
-			<%= category_rs.getString("category_name") %>
-            </td>
-            <td>
-            <input type="submit" value="Show"/></form>
-            </td>
-            </tr>
-            <% } %>
-       		</table></td>
-       		<td width=100>
-       		</td>
-            <td valign="top">
-            <table>
-            <tr>
-                <td>SKU</td>
-                <td>Name</td>
-                <td>List price</td>
-                <td>Category</td>
-            </tr>
+				<table>
+					<tr>
+						<td height="50" valign="top"><form action="products.jsp"
+								method="POST">
+								<input name="search" value="" size="50" /> <input type="submit"
+									value="Search" />
+							</form></td>
+					</tr>
+					<tr>
+						<td valign="top">
+							<table>
+								<tr>
+									<td width=200>
+										<form action="products.jsp" method="POST">
+											<input type="hidden" name="query" value="" /> All products
+									</td>
+									<td><input type="submit" value="Show" />
+									</form></td>
+								</tr>
+								<% while(category_rs.next()) { %>
+								<tr>
+									<td width=200>
+										<form action="products.jsp" method="POST">
+											<input type="hidden" name="query"
+												value=" WHERE categoryid=<%= category_rs.getInt("id")%>" />
+											<%= category_rs.getString("category_name") %>
+									</td>
+									<td><input type="submit" value="Show" />
+									</form></td>
+								</tr>
+								<% } %>
+							</table>
+						</td>
+						<td width=100></td>
+						<td valign="top">
+							<table>
+								<tr>
+									<td>SKU</td>
+									<td>Name</td>
+									<td>List price</td>
+									<td>Category</td>
+								</tr>
 
-            <tr>
-                <form action="products.jsp" method="POST">
-                    <input type="hidden" name="action" value="insert"/>
-                    <td><input value="" name="sku" size="5"/></td>
-                    <td><input value="" name="name" size="15"/></td>
-                    <td><input value="" name="list_price" size="5"/></td>
-                    <td>
-                    <select name="categoryid">
-                    <% while (category_rs.next()) { %>
-                    <option value="<%= category_rs.getInt("id") %>"><%= category_rs.getString("category_name") %></option>
-                    <% } %>
-                    </select>
-                    </td>
-                    <td><input type="submit" value="Insert"/></td>
-                </form>
-            </tr>
+								<tr>
+									<form action="products.jsp" method="POST">
+										<input type="hidden" name="action" value="insert" />
+										<td><input value="" name="sku" size="5" /></td>
+										<td><input value="" name="name" size="15" /></td>
+										<td><input value="" name="list_price" size="5" /></td>
+										<td><select name="categoryid">
+												<% 
+												category_rs.beforeFirst();
+												while (category_rs.next()) { %>
+												<option value="<%= category_rs.getInt("id") %>"><%= category_rs.getString("category_name") %></option>
+												<% } %>
+										</select></td>
+										<td><input type="submit" value="Insert" /></td>
+									</form>
+								</tr>
 
-            <%-- -------- Iteration Code -------- --%>
-            <%
+				<%-- -------- Iteration Code -------- --%>
+								<%
                 // Iterate over the ResultSet
                 while (product_rs.next()) {
                 	category_rs.beforeFirst();
             %>
 
-            <tr>
-                <form action="products.jsp" method="POST">
-                    <input type="hidden" name="action" value="update"/>
-                    <input type="hidden" name="sku" value="<%=product_rs.getInt("sku")%>"/>
+								<tr>
+									<form action="products.jsp" method="POST">
+										<input type="hidden" name="action" value="update" /> <input
+											type="hidden" name="sku"
+											value="<%=product_rs.getInt("sku")%>" />
 
-                <%-- Get the id --%>
-                <td>
-                    <%=product_rs.getInt("sku")%>
-                </td>
+										<%-- Get the id --%>
+										<td><%=product_rs.getInt("sku")%></td>
 
-                <%-- Get the fiproduct_rst name --%>
-                <td>
-                    <input value="<%=product_rs.getString("name")%>" name="name" size="15"/>
-                </td>
+										<%-- Get the fiproduct_rst name --%>
+										<td><input value="<%=product_rs.getString("name")%>"
+											name="name" size="15" /></td>
 
-                 <%-- Get the id --%>
-                <td>
-                    <input value="<%=product_rs.getInt("list_price")%>" name="list_price" size="5"/>
-                </td>
-                
-                 <%-- Get the id --%>
-                <td>
-                	<select name="categoryid">
-                    <% while (category_rs.next()) { 
+										<%-- Get the id --%>
+										<td><input value="<%=product_rs.getInt("list_price")%>"
+											name="list_price" size="5" /></td>
+
+										<%-- Get the id --%>
+										<td><select name="categoryid">
+												<% while (category_rs.next()) { 
                     	if(category_rs.getInt("id") == product_rs.getInt("categoryid")) {
                     	%>
-                    <option value="<%= category_rs.getInt("id") %>" selected="selected"><%= category_rs.getString("category_name") %></option>
-                    	<% } else { %>
-                    <option value="<%= category_rs.getInt("id") %>"><%= category_rs.getString("category_name") %></option>
-                    <% } } %>
-                    </select>
-                </td>
+												<option value="<%= category_rs.getInt("id") %>"
+													selected="selected"><%= category_rs.getString("category_name") %></option>
+												<% } else { %>
+												<option value="<%= category_rs.getInt("id") %>"><%= category_rs.getString("category_name") %></option>
+												<% } } %>
+										</select></td>
 
-                <%-- Button --%>
-                <td><input type="submit" value="Update"></td>
-                </form>
-                <form action="products.jsp" method="POST">
-                    <input type="hidden" name="action" value="delete"/>
-                    <input type="hidden" value="<%=product_rs.getInt("sku")%>" name="sku"/>
-                    <%-- Button --%>
-                <td><input type="submit" value="Delete"/></td>
-                </form>
-            </tr>
+										<%-- Button --%>
+										<td><input type="submit" value="Update"></td>
+									</form>
+									<form action="products.jsp" method="POST">
+										<input type="hidden" name="action" value="delete" /> <input
+											type="hidden" value="<%=product_rs.getInt("sku")%>"
+											name="sku" />
+										<%-- Button --%>
+										<td><input type="submit" value="Delete" /></td>
+									</form>
+								</tr>
 
-            <%
+								<%
                 }
             %>
 
-            <%-- -------- Close Connection Code -------- --%>
-            <%
+								<%-- -------- Close Connection Code -------- --%>
+								<%
                 // Close the ResultSet
                 product_rs.close();
 
@@ -284,11 +286,11 @@
                 }
             }
             %>
-        </table>
-        </td>
-        </tr>
-        </table>
-        </td>
+							</table>
+						</td>
+					</tr>
+				</table>
+			</td>
     </tr>
 </table>
 </body>
