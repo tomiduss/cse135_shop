@@ -22,7 +22,7 @@
 		if(action != null && action.equals("confirm")){
 			
 			//Select the items of the cart
-			PreparedStatement statement = conn.prepareStatement("SELECT product.* FROM cart JOIN product ON (cart.productsku = product.sku) WHERE cart.userid = ?");
+			PreparedStatement statement = conn.prepareStatement("SELECT product.*, cart.quantity as quantity FROM cart JOIN product ON (cart.productsku = product.sku) WHERE cart.userid = ?");
 			Integer user_id = (Integer) session.getAttribute("id");
 			Boolean session_error = false;
 			if (user_id != null && user_id != 0){
@@ -38,7 +38,7 @@
 		        // Inser products INTO the Purchase table.
 		        // Get timestamp
 				
-				pstmt = conn.prepareStatement("INSERT INTO purchase (userid, productsku, purchase_date) VALUES (?,?, ?)");
+				pstmt = conn.prepareStatement("INSERT INTO purchase (userid, productsku, purchase_date, quantity, total_cost) VALUES (?,?,?,?,?)");
 				pstmt.setInt(1, (Integer) session.getAttribute("id"));
 				pstmt.setInt(2, (Integer) rs.getInt("sku"));
 				
@@ -46,6 +46,12 @@
 				java.util.Date date = new java.util.Date(System.currentTimeMillis());
 				java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
 				pstmt.setTimestamp(3, timestamp);
+				//quantity
+				int q = rs.getInt("quantity");
+				int total_cost = q*rs.getInt("list_price");
+				pstmt.setInt(4, q);
+				pstmt.setInt(5, total_cost);
+				
 				
 				int rowCount = pstmt.executeUpdate();
 				
@@ -57,7 +63,7 @@
 			// Show confirmation of products purchased
 			
 	        // Create the statement
-	        PreparedStatement statement2 = conn.prepareStatement("SELECT product.* FROM cart JOIN product ON (cart.productsku = product.sku) WHERE cart.userid = ?", ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY);
+	        PreparedStatement statement2 = conn.prepareStatement("SELECT product.*, cart.quantity as quantity FROM cart JOIN product ON (cart.productsku = product.sku) WHERE cart.userid = ?", ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY);
 	      	statement2.setInt(1, (Integer) session.getAttribute("id"));
 	      	rs = statement2.executeQuery();
 
@@ -70,6 +76,7 @@
 	      					<th>Name</th>
 	      					<th>List price</th>
 	      					<th>Category</th>
+	      					<th>Quantity</th>
 	      				</tr>
 	      			<%
 	      			do{// Iterate over the ResultSet
@@ -86,6 +93,10 @@
 
 	      						<%-- Get the category --%>
 	      						<td><%=rs.getInt("categoryid")%></td>
+	      						
+	      						<%-- Get the quantity --%>
+	      						<td><%=rs.getInt("quantity")%></td>
+	      						
 	      				</tr>
 	      						
 	      				<%
@@ -98,7 +109,7 @@
 	      				rs.beforeFirst();
 	      				int sum = 0;
 	      				while(rs.next()) {
-	      					sum += rs.getInt("list_price");
+	      					sum += rs.getInt("list_price")*rs.getInt("quantity");
 	      				}
 	      				%>
 	      				</td>

@@ -96,6 +96,7 @@
 									<th>Name</th>
 									<th>List price</th>
 									<th>Category</th>
+									<th>Quantity</th>
 								</tr>
 
 <%-- -------- Iteration Code -------- --%>
@@ -120,9 +121,16 @@
 									<form action="cart.jsp" method="POST">
 										<input type="hidden" value="<%=product_rs.getInt("sku")%>"
 											name="sku" />
+										<input type="hidden" value="<%=product_rs.getInt("list_price")%>"
+											name="price" />
 										<input type="hidden" name="action" value="insert"/>
 										<%-- Button --%>
-										<td><input type="submit" value="Buy" /></td>
+										<td>
+											<input name="quantity" type="number" value=1 min=1 step=1 />
+										</td>
+										<td>
+											<input type="submit" value="Buy" />
+										</td>
 									</form>
 								</tr>
 								<%
