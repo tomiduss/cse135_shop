@@ -21,7 +21,12 @@
             PreparedStatement pstmt = null;
             ResultSet product_rs = null;
             ResultSet category_rs = null;
-            
+            Statement statement = null;
+            int category_id = 0;
+            String search = "";
+            if(request.getParameter("category_id") != null) category_id = Integer.parseInt(request.getParameter("category_id"));
+            if(request.getParameter("search") != null) search = request.getParameter("search");
+
             try {
                 // Registering Postgresql JDBC driver with the DriverManager
                 Class.forName("org.postgresql.Driver");
@@ -35,30 +40,10 @@
 <%-- -------- SELECT Statement Code -------- --%>
 <!-- -----------------Using GET ----------------------  --> 
             <%
-            	if (request.getParameter("method") = "GET"){
-            		PreparedStatement statement = conn.prepareStatement("SELECT * FROM product WHERE categoryid = ?");
-            		
-            		statement.setInt(1 , Integer.parseInt(request.getParameter("category_id")));
-            		product_rs = statement.executeQuery();           		
-            		
-            		            		
-            	}else{
-		             // Create the statement
-		            Statement statement = conn.createStatement();
-				
-		         	String query = request.getParameter("query");
-		         	if(query != null) {
-		         		product_rs = statement.executeQuery("SELECT * FROM product" + query);
-		         	}
-		         	else {
-		         		product_rs = statement.executeQuery("SELECT * FROM product");
-		         	}
-		         	
-		         	String search = request.getParameter("search");
-		         	if(search != null) {
-		         		product_rs = statement.executeQuery("SELECT * FROM product WHERE name LIKE '" + search + "%'");
-		         	}
-               }
+            	String query = "SELECT * FROM product";
+            	if (category_id != 0) query += " WHERE categoryid = " + category_id;
+            	if (search != "") query += " AND name LIKE '" + search + "%'";
+            	product_rs = conn.createStatement().executeQuery(query);
             %>
             
 <%-- Retrieve Category names and IDs --%>
@@ -77,7 +62,8 @@
 				<table>
 					<tr>
 						<td height="50" valign="top">			 
-							<form action="browse.jsp" method="POST">
+							<form action="browse.jsp" method="GET">
+								<input name="category_id" type="hidden" value=<%=category_id%> />
 								<input name="search" type="text" value="" size="50" />
 								<input type="submit" value="Search" />
 							</form>
@@ -88,30 +74,17 @@
 							<table>
 								<tr>
 									<td width=200>
-										<form action="browse.jsp" method="POST">
-											<input type="hidden" name="query" value="" /> All products
+										<a href="browse.jsp?" method="GET">All products</a>
 									</td>
-									<td><input type="submit" value="Show" />
 									</form></td>
 								</tr>
 								<% while(category_rs.next()) { %>
 								<tr>
 									<td>
-										<a href="browse.jsp" method="GET" category_id="<%=category_rs.getInt("id")%"> <%= category_rs.getString("category_name") %> </a>
+										<a href="browse.jsp?category_id=<%=category_rs.getInt("id")%>" method="GET"><%= category_rs.getString("category_name") %> </a>
 									</td>
 								</tr>								
-								<tr>
-									<td width=200>
-										<form action="browse.jsp" method="POST">
-											<input type="hidden" name="query"
-												value=" WHERE categoryid=<%= category_rs.getInt("id")%>" />
-											<%= category_rs.getString("category_name") %>
-									</td>
-									<td>
-											<input type="submit" value="Show" />
-										</form>
-									</td>
-								</tr>
+								
 								<% } %>
 							</table>
 						</td>
@@ -162,7 +135,9 @@
                 product_rs.close();
 
                 // Close the Statement
-                statement.close();
+                if(statement != null) {
+                    statement.close();
+                }
 
                 // Close the Connection
                 conn.close();

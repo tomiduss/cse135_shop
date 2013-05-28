@@ -3,7 +3,7 @@
 </head>
 <table cellpadding="5">
 	<tr>
-		<td colspan=9>
+		<td colspan=10>
 			<%  if(session.getAttribute("username") != null) { %> Hello, <%= session.getAttribute("username") + "!"%>
 			<% } %>
 		</td>
@@ -29,6 +29,7 @@
 		<td><b>Owner tools:</b></td>
 		<td><a href="products.jsp">Edit products</a></td>
 		<td><a href="categories.jsp">Edit categories</a></td>
+		<td><a href="analytics.jsp">Analytics</a></td>
 		<% } }%>
 	</tr>
 </table>

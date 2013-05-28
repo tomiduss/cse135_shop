@@ -178,10 +178,11 @@
                 // Close the Connection
                 conn.close();
             } catch (SQLException e) {
-
-                // Wrap the SQL exception in a runtime exception to propagate
-                // it upwards
-                throw new RuntimeException(e);
+				// Provide the user with an error message if there's an exception
+				if(e.getSQLState().equals("23503")) {
+					%>Can't delete a category with products!<%
+				} else {
+                %><p>SQL Error Message: <%=e.getMessage()%></p><% }
             }
             finally {
                 // Release resources in a finally block in reverse-order of
