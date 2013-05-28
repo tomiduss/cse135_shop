@@ -141,8 +141,10 @@
                 conn.close();
             } catch (SQLException e) {
 				// Provide the user with an error message if there's an exception
-				
-                %><p><%=e.getMessage()%></p><%
+				if(e.getSQLState().equals("23505")) {
+					%>Username already in use!<%
+				} else {
+                %><p>SQL Error Message: <%=e.getMessage()%></p><% }
             }
             finally {
                 // Release resources in a finally block in reverse-order of
