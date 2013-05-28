@@ -1,5 +1,5 @@
 <html><body>
-<jsp:include page="/menu.jsp" />
 <% session.invalidate(); %>
 Logged out.
+<jsp:forward page="/index.jsp" />
 </body></html>

@@ -52,8 +52,6 @@
                 // Create the statement
                 Statement statement = conn.createStatement();
 
-                // Use the created statement to SELECT
-                // the student attributes FROM the Student table.
                 
                 String username = request.getParameter("username");
                 
@@ -65,7 +63,11 @@
                 	session.setAttribute("owner", rs.getBoolean("owner"));
                 	session.setAttribute("id", rs.getInt("id"));
                 	
-                	%> <%= "Logged in as " + username + "." %> <%
+                	%>
+                	<%= "Logged in as " + username + "." %>
+                	<jsp:forward page="/index.jsp" />
+                	<%
+                	
                 }
                 else if (action != null && action.equals("login")) { %> <%= "Sorry, username <em>" + username + "</em> is unknown." %> <% }
             %>
