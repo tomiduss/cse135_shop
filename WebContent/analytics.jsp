@@ -78,8 +78,8 @@
 				
 				<%-- Row Selector --%>
 				<select name="row">
-					<option value="customers">Customers</option>
-					<option value="state">State</option>
+					<option value="customers">Customers</option>			
+					<option <% if(row != null && row.equals("state")) { %> selected="selected" <% } %> value="state">State</option>
 				</select>
 				</td>
 			
@@ -189,13 +189,19 @@
          	</tr>
          	</table>
          	
-         	
          	<%
+         	// Only run query and create table if button has been pressed
          	if(row != null) {
          	%>
          	
+       	 	<!-- Run Query -->
+         	
+     		
+         	
          	<!-- Add an HTML table header row to format the results -->
-
+			
+		 	
+         	
 				<table cellpadding="5">
 					<tr>
 						<th>
@@ -210,7 +216,6 @@
 						</th>
 						<th>Revenue</th>
 						<th></th>
-						<th>Category</th>
 					</tr>
          	
          	<%-- -------- Iteration Code -------- --%>
