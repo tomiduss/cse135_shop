@@ -22,6 +22,7 @@
             Connection conn = null;
             PreparedStatement pstmt = null;
             ResultSet rs = null;
+            ResultSet product_rs = null;
 
             try {
                 // Registering Postgresql JDBC driver with the DriverManager
@@ -194,9 +195,43 @@
          	if(row != null) {
          	%>
          	
-       	 	<!-- Run Query -->
+       	 	<!-- Create and Run Query to Find Top 10 Products Within Filter -->
+         	<%
+	 			//Find top products
+	            String query = "SELECT name, SUM(total_cost) AS total FROM ";
+         		String clause = "WHERE";
+         		
+         		//Specify quarter or full year
+         		if(quarter != null && !quarter.equals("all")) query += (quarter+"_sales ");
+         		
+         		//Specify category
+         		if(category_id != 0) {
+         			query += (clause+" categoryid="+category_id+" ");
+         			clause = "AND";
+         		}
+         		
+         		//Specify state
+         		if(state != null && !state.equals("all")) {
+         			query += (clause+" state='"+state+"' ");
+         			clause = "AND";
+         		}
+	
+	     		//Specify age
+	     		if(age != null && !age.equals("0-99")) {
+	     			query += (clause+" age >= "+start_age+" AND age <= "+end_age+" ");
+	     		}
+            
+            	query += "GROUP BY name ORDER BY total DESC LIMIT 10";
+            	
+            	%><p>Query: <%=query%></p><%
+            			
+				product_rs = conn.createStatement().executeQuery(query);
+
          	
      		
+         	%>
+         	
+         	
          	
          	<!-- Add an HTML table header row to format the results -->
 			
@@ -204,7 +239,7 @@
          	
 				<table cellpadding="5">
 					<tr>
-						<th>
+						<td>
 						<% 
 						if(row.equals("customers")) {
 							%>Customer<%
@@ -213,9 +248,16 @@
 							%>State<%
 						}
 						%>
-						</th>
-						<th>Revenue</th>
-						<th></th>
+						</td>
+						<td>Revenue</td>
+						<%
+						while(product_rs.next()) {
+						%>
+						
+						<td><%=product_rs.getString("name")%></td>
+						
+						<% } %>
+						
 					</tr>
          	
          	<%-- -------- Iteration Code -------- --%>
