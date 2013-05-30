@@ -59,6 +59,9 @@
             String quarter = null;
             if(request.getParameter("quarter") != null) quarter = request.getParameter("quarter");
             
+            int offset = 0;
+            if(request.getParameter("offset") != null) offset = Integer.parseInt(request.getParameter("offset"));
+            
             %>
 			<%-- -------- Fetch Categories for Dropdown -------- --%>
 			
@@ -228,8 +231,6 @@
             			
 				product_rs = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY).executeQuery(query);
 
-         	
-     		
          	%>
          	
          	<!-- Create and Run Query to Find Top 10 Users Within Filter -->
@@ -299,21 +300,21 @@
          	%>
          	
 
-         	<!-- Add an HTML table header row to format the results -->
+         	<!-- Iteration Code -->
 
-				<table cellpadding="5">
+				<table border="1" cellpadding="5">
 					<tr>
 						<td>
 						<% 
 						if(row.equals("customers")) {
-							%>Customer<%
+							%><strong>Customer</strong><%
 						}
 						else {
-							%>State<%
+							%><strong>State</strong><%
 						}
 						%>
 						</td>
-						<td>Revenue</td>
+						<td><strong>Revenue</strong></td>
 						<%			
 						while(product_rs.next()) {
 						%>
@@ -321,6 +322,14 @@
 						<td><%=product_rs.getString("name")%> (<%=product_rs.getInt("sku")%>)</td>
 						
 						<% } %>
+						
+						<!-- Next 10 Products Button -->
+						<td valign="top" rowspan="12">
+							<form>
+								<input type="hidden" name="offset" value="<%=offset%>" />
+								<input type="submit" value="Next 10" />
+							</form>
+						</td>
 						
 						<%
 						while(customer_rs.next()) {
@@ -343,12 +352,8 @@
 						<% } %>
 						
 					</tr>
-         	
-         	<%-- -------- Iteration Code -------- --%>
-				</table>
-            
-           
-          
+      		</table>
+
             <% } %>
             
             <%-- -------- Close Connection Code -------- --%>
