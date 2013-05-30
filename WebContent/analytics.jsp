@@ -199,23 +199,40 @@
        	 	<!-- Create and Run Query to Find Top 10 Products Within Filter -->
          	<%
 	 			//Find top products
-	            String query = "SELECT sku, name, SUM(total_cost) AS total FROM ";
-         		String clause = "WHERE";
+	            String query = "SELECT sku, name, SUM(total_cost) AS total FROM year_sales ";
+         		String clause = "WHERE ";
          		
          		//Specify quarter or full year
-         		if(quarter != null && !quarter.equals("all")) 
-         			query += (quarter+"_sales ");
-         		
+         		if(quarter != null && !quarter.equals("all")){
+         			int start_month = 0;
+         			int end_month = 0;
+         			if(quarter.equals("winter")){
+         				start_month = 12;
+             			end_month = 2;
+         			}
+         			else if(quarter.equals("spring")){
+         				start_month = 3;
+             			end_month = 5;
+         			}else if(quarter.equals("summer")){
+         				start_month = 6;
+             			end_month = 8;
+         			}else if(quarter.equals("fall")){
+         				start_month = 9;
+             			end_month = 11;
+         			}
+         			query += clause+"EXTRACT(MONTH FROM year_sales.date) >= "+start_month +" AND EXTRACT(MONTH FROM year_sales.date) <="+end_month;
+         			clause = "AND ";
+         		}         		
          		//Specify category
          		if(category_id != 0) {
          			query += (clause+" categoryid="+category_id+" ");
-         			clause = "AND";
+         			clause = "AND ";
          		}
          		
          		//Specify state
          		if(state != null && !state.equals("all")) {
          			query += (clause+" state='"+state+"' ");
-         			clause = "AND";
+         			clause = "AND ";
          		}
 	
 	     		//Specify age
@@ -236,22 +253,42 @@
          	<!-- Create and Run Query to Find Top 10 Users Within Filter -->
          	<%
 	 			//Find top products
-	            query = "SELECT id, username, SUM(total_cost) AS total FROM ";
-         		clause = "WHERE";
+	            query = "SELECT id, username, SUM(total_cost) AS total FROM year_sales ";
+         		clause = "WHERE ";
          		
          		//Specify quarter or full year
-         		if(quarter != null && !quarter.equals("all")) query += (quarter+"_sales ");
+         		if(quarter != null && !quarter.equals("all")){
+         			int start_month = 0;
+         			int end_month = 0;
+         			if(quarter.equals("winter")){
+         				start_month = 12;
+             			end_month = 2;
+         			}
+         			else if(quarter.equals("spring")){
+         				start_month = 3;
+             			end_month = 5;
+         			}else if(quarter.equals("summer")){
+         				start_month = 6;
+             			end_month = 8;
+         			}else if(quarter.equals("fall")){
+         				start_month = 9;
+             			end_month = 11;
+         			}
+         			query += clause + "EXTRACT(MONTH FROM year_sales.date) >= "+start_month +" AND EXTRACT(MONTH FROM year_sales.date) <="+end_month;
+         			clause = "AND ";
+         		} 
+         			
          		
          		//Specify category
          		if(category_id != 0) {
          			query += (clause+" categoryid="+category_id+" ");
-         			clause = "AND";
+         			clause = "AND ";
          		}
          		
          		//Specify state
          		if(state != null && !state.equals("all")) {
          			query += (clause+" state='"+state+"' ");
-         			clause = "AND";
+         			clause = "AND ";
          		}
 	
 	     		//Specify age
@@ -270,29 +307,27 @@
          	
          	<!-- Create and Run Query to Find Cells -->
          	<%
-         		query = "SELECT userid, productsku, SUM(total_cost) FROM purchase WHERE (";
+//          		query = "SELECT userid, productsku, SUM(total_cost) FROM purchase WHERE (";
          		
-         		while(product_rs.next()) {
+//          		while(product_rs.next()) {
 					
-					query += "productsku="+product_rs.getInt("sku")+" OR ";
-         		}
+// 					query += "productsku="+product_rs.getInt("sku")+" OR ";
+//          		}
          		
-         		//Cut off the last OR
-				query = query.substring(0,query.length()-4) + ") AND (";
+//          		//Cut off the last OR
+// 				query = query.substring(0,query.length()-4) + ") AND (";
 						
-				while(customer_rs.next()) {
+// 				while(customer_rs.next()) {
 		
-					query += "userid="+customer_rs.getInt("id")+" OR ";
-				}
+// 					query += "userid="+customer_rs.getInt("id")+" OR ";
+// 				}
 				
-				//Cut off the last OR
-				query = query.substring(0,query.length()-4) + ")";
+// 				//Cut off the last OR
+// 				query = query.substring(0,query.length()-4) + ")";
 						
-            	%><p>Query: <%=query%></p><%
-            			
-				//Reset ResultSets
-				product_rs.beforeFirst();
-            	customer_rs.beforeFirst();
+// 				//Reset ResultSets
+// 				product_rs.beforeFirst();
+//             	customer_rs.beforeFirst();
             	
             	//cells_rs = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY).executeQuery(query);
          	
@@ -358,26 +393,12 @@
 								%><td > --- </td><%
 							}
 						}
-						
-						
 						%>
-						
-						
-						
-						
-						         			
          			</tr>
-         			
          			<%
          		}
-         		
-         		
          		%>
-         	
 				</table>
-            
-           
-          
             <% } %>
             
             <%-- -------- Close Connection Code -------- --%>
