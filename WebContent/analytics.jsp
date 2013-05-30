@@ -23,6 +23,7 @@
             PreparedStatement pstmt = null;
             ResultSet rs = null;
             ResultSet product_rs = null;
+            ResultSet customer_rs = null;
 
             try {
                 // Registering Postgresql JDBC driver with the DriverManager
@@ -198,7 +199,7 @@
        	 	<!-- Create and Run Query to Find Top 10 Products Within Filter -->
          	<%
 	 			//Find top products
-	            String query = "SELECT name, SUM(total_cost) AS total FROM ";
+	            String query = "SELECT sku, name, SUM(total_cost) AS total FROM ";
          		String clause = "WHERE";
          		
          		//Specify quarter or full year
@@ -221,22 +222,85 @@
 	     			query += (clause+" age >= "+start_age+" AND age <= "+end_age+" ");
 	     		}
             
-            	query += "GROUP BY name ORDER BY total DESC LIMIT 10";
+            	query += "GROUP BY sku, name ORDER BY total DESC LIMIT 10";
             	
             	%><p>Query: <%=query%></p><%
             			
-				product_rs = conn.createStatement().executeQuery(query);
+				product_rs = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY).executeQuery(query);
 
          	
      		
          	%>
          	
+         	<!-- Create and Run Query to Find Top 10 Users Within Filter -->
+         	<%
+	 			//Find top products
+	            query = "SELECT id, username, SUM(total_cost) AS total FROM ";
+         		clause = "WHERE";
+         		
+         		//Specify quarter or full year
+         		if(quarter != null && !quarter.equals("all")) query += (quarter+"_sales ");
+         		
+         		//Specify category
+         		if(category_id != 0) {
+         			query += (clause+" categoryid="+category_id+" ");
+         			clause = "AND";
+         		}
+         		
+         		//Specify state
+         		if(state != null && !state.equals("all")) {
+         			query += (clause+" state='"+state+"' ");
+         			clause = "AND";
+         		}
+	
+	     		//Specify age
+	     		if(age != null && !age.equals("0-99")) {
+	     			query += (clause+" age >= "+start_age+" AND age <= "+end_age+" ");
+	     		}
+            
+            	query += "GROUP BY id, username ORDER BY total DESC LIMIT 10";
+            	
+            	%><p>Query: <%=query%></p><%
+            			
+				customer_rs = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY).executeQuery(query);
          	
+     		
+         	%>
          	
+         	<!-- Create and Run Query to Find Cells -->
+         	<%
+         		query = "SELECT userid, productsku, SUM(total_cost) FROM purchase WHERE (";
+         		
+         		while(product_rs.next()) {
+					
+					query += "productsku="+product_rs.getInt("sku")+" OR ";
+         		}
+         		
+         		//Cut off the last OR
+				query = query.substring(0,query.length()-4) + ") AND (";
+						
+				while(customer_rs.next()) {
+		
+					query += "userid="+customer_rs.getInt("id")+" OR ";
+				}
+				
+				//Cut off the last OR
+				query = query.substring(0,query.length()-4) + ")";
+						
+            	%><p>Query: <%=query%></p><%
+            			
+				//Reset ResultSets
+				product_rs.beforeFirst();
+            	customer_rs.beforeFirst();
+            	
+            	//cells_rs = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY).executeQuery(query);
+         	
+     			
+         	%>
+         	
+
          	<!-- Add an HTML table header row to format the results -->
-			
-		 	
-         	
+
 				<table cellpadding="5">
 					<tr>
 						<td>
@@ -250,11 +314,31 @@
 						%>
 						</td>
 						<td>Revenue</td>
-						<%
+						<%			
 						while(product_rs.next()) {
 						%>
 						
-						<td><%=product_rs.getString("name")%></td>
+						<td><%=product_rs.getString("name")%> (<%=product_rs.getInt("sku")%>)</td>
+						
+						<% } %>
+						
+						<%
+						while(customer_rs.next()) {
+						%>
+						
+						<tr>
+						<td><%=customer_rs.getString("username")%> (<%=customer_rs.getInt("id")%>)</td>
+						<td><%=customer_rs.getInt("total")%></td>
+						<%
+						
+						product_rs.beforeFirst();
+						while(product_rs.next()) {
+							%><td>TEST<%
+							
+							%></td><%
+						}
+						%>
+						</tr>
 						
 						<% } %>
 						
