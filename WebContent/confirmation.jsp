@@ -1,6 +1,7 @@
 <html>
 <%-- Import the java.sql package --%>
 <%@ page import="java.sql.*"%>
+<%@ page import="java.util.Calendar"%>
 <jsp:include page="/menu.jsp" />
 <%-- -------- Open Connection Code -------- --%>
 <%
@@ -31,23 +32,27 @@
 			}else{
 				session_error = true;
 			}
-			//Prepare statement for insertion in sales tables
-			
-			
-			
+
+			//Get user info
+	       	PreparedStatement uistmt = conn.prepareStatement("select * from shop_user where id = ? LIMIT 1");
+	       	uistmt.setInt(1, user_id);
+	        ResultSet user_info = uistmt.executeQuery();
+	        			
 			//Foreach row in cart, insert into purchase table and spring/summer/fall/winter_sales tables
 			while(rs.next()) {
+
 				conn.setAutoCommit(false);
 				// Create the prepared statement and use it to
 		        // Inser products INTO the Purchase table.
 		        // Get timestamp
 				//Variables:
 		        
-				int sessionid = (Integer) session.getAttribute("id");
+				
 		        int sku = (Integer) rs.getInt("sku");
+		        
 				
 				pstmt = conn.prepareStatement("INSERT INTO purchase (userid, productsku, purchase_date, quantity, total_cost) VALUES (?,?,?,?,?)");
-				pstmt.setInt(1, sessionid);
+				pstmt.setInt(1, user_id);
 				pstmt.setInt(2, sku);
 				
 				// Prepare and set timestamp
@@ -74,58 +79,59 @@
 		        // Inser products INTO the _SALES table.
 		        
 		        // Get timestamp
-				java.util.Date date = new java.util.Date(System.currentTimeMillis());
-		        //Determine which quarter is the purchase be inserted.
+				//Determine which quarter is the purchase be inserted.
 		        Calendar cal = Calendar.getInstance();
 				cal.setTime(date);
 		        int month = cal.get(Calendar.MONTH);
 		        String quarter;
 		       	if (month >= 3 && month <= 5)
-		       		quarter = 'spring';
+		       		quarter = "spring";
 		       	else if( month >= 6 && month <= 8 )
-		       		quarter = 'summer';
+		       		quarter = "summer";
 		       	else if( month >= 9 && month <= 11 )
-		       		quarter = 'fall';
+		       		quarter = "fall";
 		       	else
-		       		quearter = 'winter';
+		       		quarter = "winter";
 		       	
-		       	//Get user info
-		       	PreparedStament uistmt = conn.prepareStament("select * from shop_user where id = ?");
-		       	uistmt.setInt(1, sessionid);
-		        ResultSet user_info = uistmt.executeQuery();
 		       	//Get product info
-		        PreparedStament prodstmt = conn.prepareStament("select * from product where sku = ?");
+		        PreparedStatement prodstmt = conn.prepareStatement("select * from product where sku = ?");
 		       	prodstmt.setInt(1, sku);
-		        ResultSet prod_info = prodstmt.executeQuery();
-		       			       
 		        
-		        //Prepare stmt for insert in sales tables.
-		        PreparedStament update_st = conn.prepareStatement("INSERT INTO "+quarter+"_sales (sku, name, categoryid, id, username, state, age, total_cost) VALUES (?,?,?,?,?,?,?,?)");
-		       	//product sku
-		       	update_st.setInt(1, sku);
-		       	//product name
-		       	update_st.setString(2, prod_info.getString("name"));
-		       	//category ID
-		       	update_st.setInt(3, (Integer) prod_info.getInt("categoryid"));
-		       	//user ID
-		       	update_st.setInt(4, sessionid);		       	
-		       	//user username
-		       	update_st.setString(5, user_info.getString("username"));
-		       	//user's state
-		       	update_st.setString(6, user_info.getString("state"));		       	
-		       	//user age
-		       	update_st.setString(7, (Integer) user_info.getInt("username"));
-		       	//total_cost
-				int q = rs.getInt("quantity");
-				int total_cost = q*rs.getInt("list_price");
-				update_st.setInt(8, total_cost);
-				
-				
-				int rowCount = update_st.executeUpdate();
-				
-				// Commit transaction
-				conn.commit();
-		        conn.setAutoCommit(true);
+		       	ResultSet prod_info = prodstmt.executeQuery();
+		       	if(prod_info.next() && user_info.next() ){
+		       	//Prepare stmt for insert in sales tables.
+			        PreparedStatement update_st = conn.prepareStatement("INSERT INTO "+quarter+"_sales (sku, name, categoryid, id, username, state, age, total_cost) VALUES (?,?,?,?,?,?,?,?)");
+			       	//product sku
+			       	update_st.setInt(1, sku);
+			       	//product name
+			       	
+			       	//
+			       	
+	 		    	update_st.setString(2, prod_info.getString("name"));
+			       	//category ID
+			       	update_st.setInt(3, (Integer) prod_info.getInt("categoryid"));
+			       	//user ID
+			       	update_st.setInt(4, user_id);		       	
+			       	//user username
+			       	update_st.setString(5, user_info.getString("username"));
+			       	//user's state
+			       	update_st.setString(6, user_info.getString("state"));		       	
+			       	//user age
+			       	update_st.setInt(7, (Integer) user_info.getInt("age"));
+			       	//total_cost
+					update_st.setInt(8, total_cost);
+					
+					
+	 				rowCount = update_st.executeUpdate();
+					
+	 				user_info.close();
+	 				prod_info.close();
+	 				// Commit transaction
+	 				conn.commit();
+	 		        conn.setAutoCommit(true);	
+		       	}       	
+		        
+		        
 		        
 		        
 		        
