@@ -31,16 +31,24 @@
 			}else{
 				session_error = true;
 			}
-			//Foreach row in cart, insert into purchase table.
+			//Prepare statement for insertion in sales tables
+			
+			
+			
+			//Foreach row in cart, insert into purchase table and spring/summer/fall/winter_sales tables
 			while(rs.next()) {
 				conn.setAutoCommit(false);
 				// Create the prepared statement and use it to
 		        // Inser products INTO the Purchase table.
 		        // Get timestamp
+				//Variables:
+		        
+				int sessionid = (Integer) session.getAttribute("id");
+		        int sku = (Integer) rs.getInt("sku");
 				
 				pstmt = conn.prepareStatement("INSERT INTO purchase (userid, productsku, purchase_date, quantity, total_cost) VALUES (?,?,?,?,?)");
-				pstmt.setInt(1, (Integer) session.getAttribute("id"));
-				pstmt.setInt(2, (Integer) rs.getInt("sku"));
+				pstmt.setInt(1, sessionid);
+				pstmt.setInt(2, sku);
 				
 				// Prepare and set timestamp
 				java.util.Date date = new java.util.Date(System.currentTimeMillis());
@@ -58,6 +66,69 @@
 				// Commit transaction
 				conn.commit();
 		        conn.setAutoCommit(true);
+		        
+		        
+		        //INSERT INTO PRECOMPUTED TABLES.
+		        conn.setAutoCommit(false);
+				// Create the prepared statement and use it to
+		        // Inser products INTO the _SALES table.
+		        
+		        // Get timestamp
+				java.util.Date date = new java.util.Date(System.currentTimeMillis());
+		        //Determine which quarter is the purchase be inserted.
+		        Calendar cal = Calendar.getInstance();
+				cal.setTime(date);
+		        int month = cal.get(Calendar.MONTH);
+		        String quarter;
+		       	if (month >= 3 && month <= 5)
+		       		quarter = 'spring';
+		       	else if( month >= 6 && month <= 8 )
+		       		quarter = 'summer';
+		       	else if( month >= 9 && month <= 11 )
+		       		quarter = 'fall';
+		       	else
+		       		quearter = 'winter';
+		       	
+		       	//Get user info
+		       	PreparedStament uistmt = conn.prepareStament("select * from shop_user where id = ?");
+		       	uistmt.setInt(1, sessionid);
+		        ResultSet user_info = uistmt.executeQuery();
+		       	//Get product info
+		        PreparedStament prodstmt = conn.prepareStament("select * from product where sku = ?");
+		       	prodstmt.setInt(1, sku);
+		        ResultSet prod_info = prodstmt.executeQuery();
+		       			       
+		        
+		        //Prepare stmt for insert in sales tables.
+		        PreparedStament update_st = conn.prepareStatement("INSERT INTO "+quarter+"_sales (sku, name, categoryid, id, username, state, age, total_cost) VALUES (?,?,?,?,?,?,?,?)");
+		       	//product sku
+		       	update_st.setInt(1, sku);
+		       	//product name
+		       	update_st.setString(2, prod_info.getString("name"));
+		       	//category ID
+		       	update_st.setInt(3, (Integer) prod_info.getInt("categoryid"));
+		       	//user ID
+		       	update_st.setInt(4, sessionid);		       	
+		       	//user username
+		       	update_st.setString(5, user_info.getString("username"));
+		       	//user's state
+		       	update_st.setString(6, user_info.getString("state"));		       	
+		       	//user age
+		       	update_st.setString(7, (Integer) user_info.getInt("username"));
+		       	//total_cost
+				int q = rs.getInt("quantity");
+				int total_cost = q*rs.getInt("list_price");
+				update_st.setInt(8, total_cost);
+				
+				
+				int rowCount = update_st.executeUpdate();
+				
+				// Commit transaction
+				conn.commit();
+		        conn.setAutoCommit(true);
+		        
+		        
+		        
 			}
 	        
 			// Show confirmation of products purchased
