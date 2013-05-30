@@ -203,7 +203,8 @@
          		String clause = "WHERE";
          		
          		//Specify quarter or full year
-         		if(quarter != null && !quarter.equals("all")) query += (quarter+"_sales ");
+         		if(quarter != null && !quarter.equals("all")) 
+         			query += (quarter+"_sales ");
          		
          		//Specify category
          		if(category_id != 0) {
@@ -303,7 +304,7 @@
 
 				<table cellpadding="5">
 					<tr>
-						<td>
+						<th>
 						<% 
 						if(row.equals("customers")) {
 							%>Customer<%
@@ -312,39 +313,67 @@
 							%>State<%
 						}
 						%>
-						</td>
-						<td>Revenue</td>
+						</th>
+						<th>Revenue</th>
 						<%			
 						while(product_rs.next()) {
 						%>
 						
-						<td><%=product_rs.getString("name")%> (<%=product_rs.getInt("sku")%>)</td>
+						<th><%=product_rs.getString("name")%> (<%=product_rs.getInt("sku")%>)</th>
 						
 						<% } %>
-						
-						<%
-						while(customer_rs.next()) {
-						%>
-						
-						<tr>
-						<td><%=customer_rs.getString("username")%> (<%=customer_rs.getInt("id")%>)</td>
-						<td><%=customer_rs.getInt("total")%></td>
-						<%
-						
-						product_rs.beforeFirst();
-						while(product_rs.next()) {
-							%><td>TEST<%
-							
-							%></td><%
-						}
-						%>
-						</tr>
-						
-						<% } %>
+												
 						
 					</tr>
          	
          	<%-- -------- Iteration Code -------- --%>
+         		<% 
+         		while(customer_rs.next()){
+         			//iterate over rows. (outer loop)
+         			//first two cells, name, total.
+         			%>
+         			<tr>
+         				<td><%=customer_rs.getString("username")%> (<%=customer_rs.getInt("id")%>)</td>
+						<td><%=customer_rs.getInt("total")%></td>
+						<% 
+						//Iterate over product result set.
+						//Reset product result set to first.
+						product_rs.beforeFirst();
+						for(int i = 0; i < 10; i++){
+							if(product_rs.next()){
+								//Prepare statement 
+								//Query: select sum(total_cost) from purchase where userid = row_user and sku = product_sku
+								PreparedStatement cell_sum = conn.prepareStatement("select sum(total_cost) as sm from purchase where userid = ? and productsku = ?");
+								cell_sum.setInt(1, customer_rs.getInt("id"));
+								cell_sum.setInt(2, product_rs.getInt("sku"));
+								ResultSet sum_rs = cell_sum.executeQuery();
+								
+								if(sum_rs.next()){
+									%><td><%=sum_rs.getInt("sm")%></td><%
+								}else{
+									%><td> --- </td><%
+								}
+							}
+							else{
+								%><td > --- </td><%
+							}
+						}
+						
+						
+						%>
+						
+						
+						
+						
+						         			
+         			</tr>
+         			
+         			<%
+         		}
+         		
+         		
+         		%>
+         	
 				</table>
             
            
