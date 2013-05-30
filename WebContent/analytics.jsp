@@ -59,8 +59,11 @@
             String quarter = null;
             if(request.getParameter("quarter") != null) quarter = request.getParameter("quarter");
             
-            int offset = 0;
-            if(request.getParameter("offset") != null) offset = Integer.parseInt(request.getParameter("offset"));
+            int c_offset = 0;
+            if(request.getParameter("c_offset") != null) c_offset = Integer.parseInt(request.getParameter("c_offset"));
+            
+            int r_offset = 0;
+            if(request.getParameter("r_offset") != null) r_offset = Integer.parseInt(request.getParameter("r_offset"));
             
             %>
 			<%-- -------- Fetch Categories for Dropdown -------- --%>
@@ -206,7 +209,8 @@
          		String clause = "WHERE";
          		
          		//Specify quarter or full year
-         		if(quarter != null && !quarter.equals("all")) query += (quarter+"_sales ");
+         		if(quarter != null && !quarter.equals("all")) 
+         			query += (quarter+"_sales ");
          		
          		//Specify category
          		if(category_id != 0) {
@@ -225,7 +229,7 @@
 	     			query += (clause+" age >= "+start_age+" AND age <= "+end_age+" ");
 	     		}
             
-            	query += "GROUP BY sku, name ORDER BY total DESC LIMIT 10";
+            	query += "GROUP BY sku, name ORDER BY total DESC LIMIT 10 OFFSET "+c_offset;
             	
             	%><p>Query: <%=query%></p><%
             			
@@ -259,7 +263,7 @@
 	     			query += (clause+" age >= "+start_age+" AND age <= "+end_age+" ");
 	     		}
             
-            	query += "GROUP BY id, username ORDER BY total DESC LIMIT 10";
+            	query += "GROUP BY id, username ORDER BY total DESC LIMIT 10 OFFSET "+r_offset;
             	
             	%><p>Query: <%=query%></p><%
             			
@@ -268,43 +272,11 @@
      		
          	%>
          	
-         	<!-- Create and Run Query to Find Cells -->
-         	<%
-         		query = "SELECT userid, productsku, SUM(total_cost) FROM purchase WHERE (";
-         		
-         		while(product_rs.next()) {
-					
-					query += "productsku="+product_rs.getInt("sku")+" OR ";
-         		}
-         		
-         		//Cut off the last OR
-				query = query.substring(0,query.length()-4) + ") AND (";
-						
-				while(customer_rs.next()) {
-		
-					query += "userid="+customer_rs.getInt("id")+" OR ";
-				}
-				
-				//Cut off the last OR
-				query = query.substring(0,query.length()-4) + ")";
-						
-            	%><p>Query: <%=query%></p><%
-            			
-				//Reset ResultSets
-				product_rs.beforeFirst();
-            	customer_rs.beforeFirst();
-            	
-            	//cells_rs = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY).executeQuery(query);
-         	
-     			
-         	%>
-         	
-
          	<!-- Iteration Code -->
 
 				<table border="1" cellpadding="5">
 					<tr>
-						<td>
+						<th>
 						<% 
 						if(row.equals("customers")) {
 							%><strong>Customer</strong><%
@@ -313,47 +285,87 @@
 							%><strong>State</strong><%
 						}
 						%>
-						</td>
-						<td><strong>Revenue</strong></td>
+						
+						</th>
+						<th>Revenue</th>
 						<%			
 						while(product_rs.next()) {
 						%>
 						
-						<td><%=product_rs.getString("name")%> (<%=product_rs.getInt("sku")%>)</td>
+						<th><%=product_rs.getString("name")%> (<%=product_rs.getInt("sku")%>)</th>
 						
 						<% } %>
+												
 						
 						<!-- Next 10 Products Button -->
 						<td valign="top" rowspan="12">
 							<form>
-								<input type="hidden" name="offset" value="<%=offset%>" />
-								<input type="submit" value="Next 10" />
+								<input type="hidden" name="row" value="<%=row%>"/>
+								<input type="hidden" name="age" value="<%=age%>"/>
+								<input type="hidden" name="state" value="<%=state%>"/>
+								<input type="hidden" name="category" value="<%=category_id%>"/>
+								<input type="hidden" name="quarter" value="<%=quarter%>"/>
+								<input type="hidden" name="r_offset" value="<%=r_offset%>"/>
+								<input type="hidden" name="c_offset" value="<%=(c_offset + 10)%>"/>
+								<input type="submit" value="Next 10"/>
 							</form>
 						</td>
-						
-						<%
-						while(customer_rs.next()) {
-						%>
-						
-						<tr>
-						<td><%=customer_rs.getString("username")%> (<%=customer_rs.getInt("id")%>)</td>
-						<td><%=customer_rs.getInt("total")%></td>
-						<%
-						
-						product_rs.beforeFirst();
-						while(product_rs.next()) {
-							%><td>TEST<%
-							
-							%></td><%
-						}
-						%>
-						</tr>
-						
-						<% } %>
-						
 					</tr>
-      		</table>
-
+         	
+         	<%-- -------- Iteration Code -------- --%>
+         		<% 
+         		while(customer_rs.next()){
+         			//iterate over rows. (outer loop)
+         			//first two cells, name, total.
+         			%>
+         			<tr>
+         				<td><%=customer_rs.getString("username")%> (<%=customer_rs.getInt("id")%>)</td>
+						<td><%=customer_rs.getInt("total")%></td>
+						<% 
+						//Iterate over product result set.
+						//Reset product result set to first.
+						product_rs.beforeFirst();
+						for(int i = 0; i < 10; i++){
+							if(product_rs.next()){
+								//Prepare statement 
+								//Query: select sum(total_cost) from purchase where userid = row_user and sku = product_sku
+								PreparedStatement cell_sum = conn.prepareStatement("select sum(total_cost) as sm from purchase where userid = ? and productsku = ?");
+								cell_sum.setInt(1, customer_rs.getInt("id"));
+								cell_sum.setInt(2, product_rs.getInt("sku"));
+								ResultSet sum_rs = cell_sum.executeQuery();
+								
+								if(sum_rs.next()){
+									%><td><%=sum_rs.getInt("sm")%></td><%
+								}else{
+									%><td> --- </td><%
+								}
+							}
+							else{
+								%><td > --- </td><%
+							}
+						}	
+						%>         			
+         			</tr>	
+         			<%
+         		}
+         		%>
+         		
+         		<!-- Next 10 Customers Button -->
+						<tr>
+						<td colspan="12">
+							<form>
+								<input type="hidden" name="row" value="<%=row%>"/>
+								<input type="hidden" name="age" value="<%=age%>"/>
+								<input type="hidden" name="state" value="<%=state%>"/>
+								<input type="hidden" name="category" value="<%=category_id%>"/>
+								<input type="hidden" name="quarter" value="<%=quarter%>"/>
+								<input type="hidden" name="c_offset" value="<%=c_offset%>"/>
+								<input type="hidden" name="r_offset" value="<%=(r_offset + 10)%>"/>
+								<input type="submit" value="Next 10"/>
+							</form>
+						</td>
+						</tr>
+				</table>
             <% } %>
             
             <%-- -------- Close Connection Code -------- --%>
