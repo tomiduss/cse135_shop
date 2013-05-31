@@ -24,6 +24,7 @@
             ResultSet rs = null;
             ResultSet product_rs = null;
             ResultSet customer_rs = null;
+            String query = "";
 
             try {
                 // Registering Postgresql JDBC driver with the DriverManager
@@ -58,6 +59,12 @@
             
             String quarter = null;
             if(request.getParameter("quarter") != null) quarter = request.getParameter("quarter");
+            
+            int c_offset = 0;
+            if(request.getParameter("c_offset") != null) c_offset = Integer.parseInt(request.getParameter("c_offset"));
+            
+            int r_offset = 0;
+            if(request.getParameter("r_offset") != null) r_offset = Integer.parseInt(request.getParameter("r_offset"));
             
             %>
 			<%-- -------- Fetch Categories for Dropdown -------- --%>
@@ -199,155 +206,153 @@
        	 	<!-- Create and Run Query to Find Top 10 Products Within Filter -->
          	<%
 	 			//Find top products
-	            String query = "SELECT sku, name, SUM(total_cost) AS total FROM year_sales ";
-         		String clause = "WHERE ";
+	            query = "SELECT sku, name, SUM(total_cost) AS total FROM ";
+         		String clause = "WHERE";
          		
          		//Specify quarter or full year
-         		if(quarter != null && !quarter.equals("all")){
-         			int start_month = 0;
-         			int end_month = 0;
-         			if(quarter.equals("winter")){
-         				start_month = 12;
-             			end_month = 2;
+         		if(quarter != null && !quarter.equals("all")){ 
+         			query += (quarter+"_sales ");
+         			//Specify category
+             		if(category_id != 0) {
+             			query += (clause+" categoryid="+category_id+" ");
+             			clause = "AND";
+             		}
+             		
+             		//Specify state
+             		if(state != null && !state.equals("all")) {
+             			query += (clause+" state='"+state+"' ");
+             			clause = "AND";
+             		}
+
+    	     		//Specify age
+    	     		if(age != null && !age.equals("0-99")) {
+    	     			query += (clause+" age >= "+start_age+" AND age <= "+end_age+" ");
+    	     		}
+                
+                	query += "GROUP BY sku, name ORDER BY total DESC LIMIT 10 OFFSET "+c_offset;
+         		}
+         		else if(quarter.equals("all")){
+         			String[] quarters = {"winter", "spring", "summer", "fall"};
+         			String sub_query = "";
+         			
+         			for(int i = 0; i < 4; i++){
+         				query = "(";
+         				sub_query = "SELECT sku, name, SUM(total_cost) AS total FROM ";
+             			clause = "WHERE";
+             			//
+             			sub_query += (quarters[i]+"_sales ");
+             			if(category_id != 0) {
+                 			sub_query += (clause+" categoryid="+category_id+" ");
+                 			clause = "AND";
+                 		}
+                 		
+                 		//Specify state
+                 		if(state != null && !state.equals("all")) {
+                 			sub_query += (clause+" state='"+state+"' ");
+                 			clause = "AND";
+                 		}
+
+        	     		//Specify age
+        	     		if(age != null && !age.equals("0-99")) {
+        	     			sub_query += (clause+" age >= "+start_age+" AND age <= "+end_age+" ");
+        	     		}
+             			query += sub_query+" GROUP BY sku, name )";
+             			if( i < 3)
+             				query += " UNION ";
          			}
-         			else if(quarter.equals("spring")){
-         				start_month = 3;
-             			end_month = 5;
-         			}else if(quarter.equals("summer")){
-         				start_month = 6;
-             			end_month = 8;
-         			}else if(quarter.equals("fall")){
-         				start_month = 9;
-             			end_month = 11;
-         			}
-         			query += clause+"EXTRACT(MONTH FROM year_sales.date) >= "+start_month +" AND EXTRACT(MONTH FROM year_sales.date) <="+end_month;
-         			clause = "AND ";
-         		}         		
-         		//Specify category
-         		if(category_id != 0) {
-         			query += (clause+" categoryid="+category_id+" ");
-         			clause = "AND ";
+         			query += "ORDER BY total DESC LIMIT 10 OFFSET "+c_offset;
+         			
          		}
          		
-         		//Specify state
-         		if(state != null && !state.equals("all")) {
-         			query += (clause+" state='"+state+"' ");
-         			clause = "AND ";
-         		}
-	
-	     		//Specify age
-	     		if(age != null && !age.equals("0-99")) {
-	     			query += (clause+" age >= "+start_age+" AND age <= "+end_age+" ");
-	     		}
-            
-            	query += "GROUP BY sku, name ORDER BY total DESC LIMIT 10";
             	
             	%><p>Query: <%=query%></p><%
             			
 				product_rs = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY).executeQuery(query);
 
-         	
-     		
+
          	%>
          	
          	<!-- Create and Run Query to Find Top 10 Users Within Filter -->
          	<%
-	 			//Find top products
-	            query = "SELECT id, username, SUM(total_cost) AS total FROM year_sales ";
-         		clause = "WHERE ";
+	 			//Find top customers
+	            query = "SELECT id, username, SUM(total_cost) AS total FROM ";
+         		clause = "WHERE";
          		
          		//Specify quarter or full year
-         		if(quarter != null && !quarter.equals("all")){
-         			int start_month = 0;
-         			int end_month = 0;
-         			if(quarter.equals("winter")){
-         				start_month = 12;
-             			end_month = 2;
-         			}
-         			else if(quarter.equals("spring")){
-         				start_month = 3;
-             			end_month = 5;
-         			}else if(quarter.equals("summer")){
-         				start_month = 6;
-             			end_month = 8;
-         			}else if(quarter.equals("fall")){
-         				start_month = 9;
-             			end_month = 11;
-         			}
-         			query += clause + "EXTRACT(MONTH FROM year_sales.date) >= "+start_month +" AND EXTRACT(MONTH FROM year_sales.date) <="+end_month;
-         			clause = "AND ";
-         		} 
+         		//Specify quarter or full year
+         		if(quarter != null && !quarter.equals("all")){ 
+         			query += (quarter+"_sales ");
+         			//Specify category
+             		if(category_id != 0) {
+             			query += (clause+" categoryid="+category_id+" ");
+             			clause = "AND";
+             		}
+             		
+             		//Specify state
+             		if(state != null && !state.equals("all")) {
+             			query += (clause+" state='"+state+"' ");
+             			clause = "AND";
+             		}
+
+    	     		//Specify age
+    	     		if(age != null && !age.equals("0-99")) {
+    	     			query += (clause+" age >= "+start_age+" AND age <= "+end_age+" ");
+    	     		}
+                
+                	query += "GROUP BY id, username ORDER BY total DESC LIMIT 10 OFFSET "+c_offset;
+         		}
+         		else if(quarter.equals("all")){
+         			String[] quarters = {"winter", "spring", "summer", "fall"};
+         			String sub_query = "";
          			
-         		
-         		//Specify category
-         		if(category_id != 0) {
-         			query += (clause+" categoryid="+category_id+" ");
-         			clause = "AND ";
+         			for(int i = 0; i < 4; i++){
+         				query = "(";
+         				sub_query = "SELECT id, username, SUM(total_cost) AS total FROM ";
+             			clause = "WHERE";
+             			//
+             			sub_query += (quarters[i]+"_sales ");
+             			if(category_id != 0) {
+                 			sub_query += (clause+" categoryid="+category_id+" ");
+                 			clause = "AND";
+                 		}
+                 		
+                 		//Specify state
+                 		if(state != null && !state.equals("all")) {
+                 			sub_query += (clause+" state='"+state+"' ");
+                 			clause = "AND";
+                 		}
+
+        	     		//Specify age
+        	     		if(age != null && !age.equals("0-99")) {
+        	     			sub_query += (clause+" age >= "+start_age+" AND age <= "+end_age+" ");
+        	     		}
+             			query += sub_query+" GROUP BY id, username )";
+             			if( i < 3)
+             				query += " UNION ";
+         			}
+         			query += "ORDER BY total DESC LIMIT 10 OFFSET "+c_offset;
+         			
          		}
-         		
-         		//Specify state
-         		if(state != null && !state.equals("all")) {
-         			query += (clause+" state='"+state+"' ");
-         			clause = "AND ";
-         		}
-	
-	     		//Specify age
-	     		if(age != null && !age.equals("0-99")) {
-	     			query += (clause+" age >= "+start_age+" AND age <= "+end_age+" ");
-	     		}
-            
-            	query += "GROUP BY id, username ORDER BY total DESC LIMIT 10";
-            	
             	%><p>Query: <%=query%></p><%
             			
 				customer_rs = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY).executeQuery(query);
-         	
+
      		
          	%>
-         	
-         	<!-- Create and Run Query to Find Cells -->
-         	<%
-//          		query = "SELECT userid, productsku, SUM(total_cost) FROM purchase WHERE (";
-         		
-//          		while(product_rs.next()) {
-					
-// 					query += "productsku="+product_rs.getInt("sku")+" OR ";
-//          		}
-         		
-//          		//Cut off the last OR
-// 				query = query.substring(0,query.length()-4) + ") AND (";
-						
-// 				while(customer_rs.next()) {
-		
-// 					query += "userid="+customer_rs.getInt("id")+" OR ";
-// 				}
-				
-// 				//Cut off the last OR
-// 				query = query.substring(0,query.length()-4) + ")";
-						
-// 				//Reset ResultSets
-// 				product_rs.beforeFirst();
-//             	customer_rs.beforeFirst();
-            	
-            	//cells_rs = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY).executeQuery(query);
-         	
-     			
-         	%>
-         	
 
-         	<!-- Add an HTML table header row to format the results -->
-
-				<table cellpadding="5">
+         	<!-- Iteration Code -->
+				<table border="1" cellpadding="5">
 					<tr>
 						<th>
 						<% 
 						if(row.equals("customers")) {
-							%>Customer<%
+							%><strong>Customer</strong><%
 						}
 						else {
-							%>State<%
+							%><strong>State</strong><%
 						}
 						%>
+						
 						</th>
 						<th>Revenue</th>
 						<%			
@@ -359,6 +364,19 @@
 						<% } %>
 												
 						
+						<!-- Next 10 Products Button -->
+						<td valign="top" rowspan="12">
+							<form>
+								<input type="hidden" name="row" value="<%=row%>"/>
+								<input type="hidden" name="age" value="<%=age%>"/>
+								<input type="hidden" name="state" value="<%=state%>"/>
+								<input type="hidden" name="category" value="<%=category_id%>"/>
+								<input type="hidden" name="quarter" value="<%=quarter%>"/>
+								<input type="hidden" name="r_offset" value="<%=r_offset%>"/>
+								<input type="hidden" name="c_offset" value="<%=(c_offset + 10)%>"/>
+								<input type="submit" value="Next 10"/>
+							</form>
+						</td>
 					</tr>
          	
          	<%-- -------- Iteration Code -------- --%>
@@ -392,12 +410,29 @@
 							else{
 								%><td > --- </td><%
 							}
-						}
-						%>
-         			</tr>
+
+						}	
+						%>         			
+         			</tr>	
          			<%
          		}
          		%>
+         		
+         		<!-- Next 10 Customers Button -->
+						<tr>
+						<td colspan="12">
+							<form>
+								<input type="hidden" name="row" value="<%=row%>"/>
+								<input type="hidden" name="age" value="<%=age%>"/>
+								<input type="hidden" name="state" value="<%=state%>"/>
+								<input type="hidden" name="category" value="<%=category_id%>"/>
+								<input type="hidden" name="quarter" value="<%=quarter%>"/>
+								<input type="hidden" name="c_offset" value="<%=c_offset%>"/>
+								<input type="hidden" name="r_offset" value="<%=(r_offset + 10)%>"/>
+								<input type="submit" value="Next 10"/>
+							</form>
+						</td>
+						</tr>
 				</table>
             <% } %>
             
@@ -420,7 +455,7 @@
 
                 // Wrap the SQL exception in a runtime exception to propagate
                 // it upwards
-                throw new RuntimeException(e);
+                throw new RuntimeException(query);
             }
             finally {
                 // Release resources in a finally block in reverse-order of
