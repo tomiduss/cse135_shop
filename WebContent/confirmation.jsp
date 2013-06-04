@@ -8,16 +8,28 @@
 	Connection conn = null;
 	PreparedStatement pstmt = null;
 	ResultSet rs = null;
+	
+	Boolean performance_db = true;
+    //if(session.getAttribute("demo") != null) { if(session.getAttribute("demo").toString().equals("true")) performance_db = false; };
 
 	try {
-	    // Registering Postgresql JDBC driver with the DriverManager
-	    Class.forName("org.postgresql.Driver");
+		if(performance_db) {
+            // Registering Postgresql JDBC driver with the DriverManager
+            Class.forName("org.postgresql.Driver");
 
-	    // Open a connection to the database using DriverManager
-	    conn = DriverManager.getConnection(
-	        "jdbc:postgresql://localhost/postgres?" +
-	        "user=postgres&password=leviathan");
-		String action = request.getParameter("action");
+            // Open a connection to the database using DriverManager
+            conn = DriverManager.getConnection(
+                "jdbc:postgresql://localhost/postgres?" +
+                "user=postgres&password=leviathan");
+    	} else {
+    		// Registering Postgresql JDBC driver with the DriverManager
+            Class.forName("org.postgresql.Driver");
+
+            // Open a connection to the database using DriverManager
+            conn = DriverManager.getConnection(
+                "jdbc:postgresql://localhost/postgresdemo?" +
+                "user=postgres&password=leviathan");       		
+    	}
 		
 		//CONFIRMATION
 		if(action != null && action.equals("confirm")){

@@ -1,6 +1,7 @@
 <head>
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
+
 <table cellpadding="5">
 	<tr>
 		<td colspan=10>
