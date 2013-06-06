@@ -234,9 +234,9 @@
          		else if(quarter.equals("all")){
          			String[] quarters = {"winter", "spring", "summer", "fall"};
          			String sub_query = "";
-         			
+         			query = "";
          			for(int i = 0; i < 4; i++){
-         				query = "(";
+         				query += "(";
          				sub_query = "SELECT sku, name, SUM(total_cost) AS total FROM ";
              			clause = "WHERE";
              			//

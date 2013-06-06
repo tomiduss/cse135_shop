@@ -1,5 +1,8 @@
 <html>
-
+<head>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script type="text/javascript" src="products.js"></script>
+</head>
 <body>
 <table>
     <tr>
@@ -108,15 +111,15 @@
 				
             	String query = request.getParameter("query");
             	if(query != null) {
-            		product_rs = statement.executeQuery("SELECT * FROM product" + query);
+            		product_rs = statement.executeQuery("SELECT * FROM product" + query +" LIMIT 100" );
             	}
             	else {
-            		product_rs = statement.executeQuery("SELECT * FROM product");
+            		product_rs = statement.executeQuery("SELECT * FROM product LIMIT 100");
             	}
             	
             	String search = request.getParameter("search");
             	if(search != null) {
-            		product_rs = statement.executeQuery("SELECT * FROM product WHERE name LIKE '" + search + "%'");
+            		product_rs = statement.executeQuery("SELECT * FROM product WHERE name LIKE '" + search + "%' LIMIT 100");
             	}
                 
             %>
@@ -169,77 +172,67 @@
 						</td>
 						<td width=100></td>
 						<td valign="top">
-							<table>
+							<p id="status"></p>
+							<table id="product_table">
 								<tr>
-									<td>SKU</td>
-									<td>Name</td>
-									<td>List price</td>
-									<td>Category</td>
+									<th>SKU</th>
+									<th>Name</th>
+									<th>List price</th>
+									<th>Category</th>
 								</tr>
 
-								<tr>
-									<form action="products.jsp" method="POST">
-										<input type="hidden" name="action" value="insert" />
-										<td><input value="" name="sku" size="5" /></td>
-										<td><input value="" name="name" size="15" /></td>
-										<td><input value="" name="list_price" size="5" /></td>
-										<td><select name="categoryid">
-												<% 
-												category_rs.beforeFirst();
-												while (category_rs.next()) { %>
-												<option value="<%= category_rs.getInt("id") %>"><%= category_rs.getString("category_name") %></option>
-												<% } %>
-										</select></td>
-										<td><input type="submit" value="Insert" /></td>
-									</form>
+								<tr id="insert_row">
+									<td><input id="form_sku" value="" name="sku" size="5" /></td>
+									<td><input id="form_name" value="" name="name" size="15" /></td>
+									<td><input id="form_price" value="" name="list_price" size="5" /></td>
+									<td><select id="form_category" class="cat_select" name="categoryid">
+											<% 
+											category_rs.beforeFirst();
+											while (category_rs.next()) { %>
+											<option value="<%= category_rs.getInt("id") %>"><%= category_rs.getString("category_name") %></option>
+											<% } %>
+									</select></td>
+									<td><input onClick="$products.insert_p()" type="button" value="Insert" /></td>
 								</tr>
 
 				<%-- -------- Iteration Code -------- --%>
-								<%
+				<%
                 // Iterate over the ResultSet
                 while (product_rs.next()) {
                 	category_rs.beforeFirst();
-            %>
+                	int sku_ = product_rs.getInt("sku");
+                	String name_ = product_rs.getString("name");
+                	int list_price_ = product_rs.getInt("list_price");
+                	int cat_id = product_rs.getInt("categoryid");
+            	%>
 
-								<tr>
-									<form action="products.jsp" method="POST">
-										<input type="hidden" name="action" value="update" /> <input
-											type="hidden" name="sku"
-											value="<%=product_rs.getInt("sku")%>" />
+								<tr id="row_<%=sku_%>">
+									<%-- Get the id --%>
+									<td id="sku_<%=sku_%>"><%=sku_%></td>
 
-										<%-- Get the id --%>
-										<td><%=product_rs.getInt("sku")%></td>
+									<%-- Get the fiproduct_rst name --%>
+									<td id="name_<%=sku_%>"><input class="name_input" value="<%=name_%>"
+										name="name" size="15" /></td>
 
-										<%-- Get the fiproduct_rst name --%>
-										<td><input value="<%=product_rs.getString("name")%>"
-											name="name" size="15" /></td>
+									<%-- Get the price --%>
+									<td id="price_<%=sku_%>" ><input class="price_input" value="<%=list_price_%>"
+										name="list_price" size="5" /></td>
 
-										<%-- Get the id --%>
-										<td><input value="<%=product_rs.getInt("list_price")%>"
-											name="list_price" size="5" /></td>
-
-										<%-- Get the id --%>
-										<td><select name="categoryid">
-												<% while (category_rs.next()) { 
-                    	if(category_rs.getInt("id") == product_rs.getInt("categoryid")) {
-                    	%>
-												<option value="<%= category_rs.getInt("id") %>"
-													selected="selected"><%= category_rs.getString("category_name") %></option>
-												<% } else { %>
-												<option value="<%= category_rs.getInt("id") %>"><%= category_rs.getString("category_name") %></option>
-												<% } } %>
-										</select></td>
-
-										<%-- Button --%>
-										<td><input type="submit" value="Update"></td>
-									</form>
-									<form action="products.jsp" method="POST">
-										<input type="hidden" name="action" value="delete" /> <input
-											type="hidden" value="<%=product_rs.getInt("sku")%>"
-											name="sku" />
-										<%-- Button --%>
-										<td><input type="submit" value="Delete" /></td>
-									</form>
+									<%-- Get the category id --%>
+									<td id="cat_<%=sku_%>" >
+										<select class="cat_select" name="categoryid">
+											<% while (category_rs.next()) { 
+                   							if(category_rs.getInt("id") == cat_id) {
+                   							%>
+											<option value="<%= category_rs.getInt("id") %>"
+												selected="selected"><%= category_rs.getString("category_name") %></option>
+											<% } else { %>
+											<option value="<%= category_rs.getInt("id") %>"><%= category_rs.getString("category_name") %></option>
+											<% } } %>
+										</select>
+									</td>
+									<td><input onClick="$products.update_p(<%=sku_%>)" class="update_button" type="button" value="Update" /></td>
+									<td><input onClick="$products.delete_p(<%=sku_%>)" type="button" value="Delete" /></td>
 								</tr>
 
 								<%
