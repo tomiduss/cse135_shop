@@ -1,11 +1,16 @@
+<%@page contentType="text/html; charset=UTF-8"%>
+<%@ page import="java.sql.*"%>
+<%@page import="org.json.simple.JSONObject"%>
+<%@page import="org.json.simple.JSONArray"%>
 <html>
-<head>
 <head>
 <link rel="stylesheet" type="text/css" href="style.css">
 <script type="text/javascript">
 
 //Interval function that runs the script every 2 seconds
-window.setInterval("javascript:show();",100000);
+window.setInterval("javascript:show();",2000);
+var last_id = 0;
+
 function createXMLHttpRequest(){
   // Provide the XMLHttpRequest class for IE 5.x-6.x:
   if( typeof XMLHttpRequest == "undefined" ) XMLHttpRequest = function() {
@@ -23,7 +28,22 @@ var AJAX = createXMLHttpRequest();
 function handler() {
   if(AJAX.readyState == 4 && AJAX.status == 200) {
       var json = eval('(' + AJAX.responseText +')');
-      alert('Success. Result: name => ' + json.name + ',' + 'balance => ' + json.balance);
+      for (var int = json.length-1; int >= 0; int--) {
+			//Break if log item has been "seen" in a previous iteration
+			new_id = json[int].id;
+			if(new_id == last_id) {
+				break;
+			}
+			//Find the appropiate cell's id from the xml log
+			var cell = "" + json[int].categoryid + "-" + json[int].state;
+			
+			var prev = 0; 
+			if(!isNaN(parseInt(document.getElementById(cell).innerHTML))) prev = parseInt(document.getElementById(cell).innerHTML);
+			var next = json[int].amount;
+			document.getElementById(cell).innerHTML= parseInt(prev) + parseInt(next);
+			}
+		//Set last_id, which is the newest log entry that was "seen" last iteration
+		last_id = json[json.length-1].id;
   }else if (AJAX.readyState == 4 && AJAX.status != 200) {
     alert('Something went wrong...');
   }
@@ -31,16 +51,13 @@ function handler() {
 
 function show(){
   AJAX.onreadystatechange = handler;
-  AJAX.open("GET", "log.jsp");
+  AJAX.open("GET", "log.jsp?nocache="+Math.random());
   AJAX.send("");
 };
 </script>
 </head>
 
 <body onload="show()">
-<div id="message"></div>
-<div id="message2"></div>
-<div id="message3"></div>
 
 <table>
     <tr>

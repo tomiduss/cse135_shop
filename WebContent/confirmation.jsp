@@ -84,7 +84,7 @@
 	        conn.setAutoCommit(true);
 			
 			}
-	        
+				        
 			//Get user info
 	       	PreparedStatement uistmt = conn.prepareStatement("select * from shop_user where id = ? LIMIT 1");
 	       	uistmt.setInt(1, user_id);
@@ -176,18 +176,19 @@
 					
 	 				rowCount = update_st.executeUpdate();
 					
-	 				user_info.close();
-	 				prod_info.close();
+	 				
 	 				// Commit transaction
 	 				conn.commit();
 	 		        conn.setAutoCommit(true);	
 		       	}       	
-		        
+				prod_info.close();
+
 		        
 		        
 		        
 		        
 			}
+			user_info.close();
 	        
 			// Show confirmation of products purchased
 			
