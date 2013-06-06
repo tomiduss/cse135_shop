@@ -1,6 +1,16 @@
 <html>
-
 <body>
+<!-- Script to show age and state if user select "customer" from dropdown -->
+<script type="text/javascript">
+	function check() {
+		if (document.getElementById("role").selectedIndex == 1) {
+			document.getElementById("age1").style.display = "block";
+			document.getElementById("age2").style.display = "block";
+			document.getElementById("state1").style.display = "block";
+			document.getElementById("state2").style.display = "block";
+		}
+	}
+</script>
 <table>
     <tr>
         <td valign="top">
@@ -38,15 +48,23 @@
 
                     // Begin transaction
                     conn.setAutoCommit(false);
+					
+                    Boolean owner = Boolean.parseBoolean(request.getParameter("role"));
+                    
+					if(owner) {
+						pstmt = conn.prepareStatement("INSERT INTO shop_user (username, owner) VALUES (?, ?)");
 
-                    // Create the prepared statement and use it to
-                    // INSERT student values INTO the students table.
-                    pstmt = conn.prepareStatement("INSERT INTO shop_user (username, owner, age, state) VALUES (?, ?, ?, ?)");
+	                    pstmt.setString(1, request.getParameter("username"));
+	                    pstmt.setBoolean(2, Boolean.parseBoolean(request.getParameter("role")));
+					} else {
+						pstmt = conn.prepareStatement("INSERT INTO shop_user (username, owner, age, state) VALUES (?, ?, ?, ?)");
 
-                    pstmt.setString(1, request.getParameter("username"));
-                    pstmt.setBoolean(2, Boolean.parseBoolean(request.getParameter("role")));
-                    pstmt.setInt(3, Integer.parseInt(request.getParameter("age")));
-                    pstmt.setString(4, request.getParameter("state"));
+	                    pstmt.setString(1, request.getParameter("username"));
+	                    pstmt.setBoolean(2, Boolean.parseBoolean(request.getParameter("role")));
+	                    pstmt.setInt(3, Integer.parseInt(request.getParameter("age")));
+	                    pstmt.setString(4, request.getParameter("state"));
+					}
+                    
                     int rowCount = pstmt.executeUpdate();
 
                     // Commit transaction
@@ -61,8 +79,8 @@
             <tr>
                 <td>Username</td>
                 <td>Role</td>
-                <td>Age</td>
-                <td>State</td>
+                <td id="age1">Age</td>
+                <td id="state1">State</td>
             </tr>
 
             <tr>
@@ -70,14 +88,14 @@
                     <input type="hidden" name="action" value="insert"/>
                     <td><input value="" name="username" size="15"/></td>
                     <td>
-                    <select name="role">
+                    <select id="role" name="role" onchange="check()">
                     <option value="true">Owner</option>
                     <option value="false">Customer</option>
                     </select>
                     </td>
-                    <td><input value="" name="age" size="3"/></td>
-                    <td>
-                    <select name="state">
+                    <td id="age2"><input id="age" value="" name="age" size="3"/></td>
+                    <td id="state2">
+                    <select id="state" name="state">
 						<option value="AL">Alabama</option>
 						<option value="AK">Alaska</option>
 						<option value="AZ">Arizona</option>
@@ -132,6 +150,13 @@
 					</select></td>
 					<td><input type="submit" value="Submit"/></td>
                 </form>
+                <!-- Hide age and state by default -->
+                <script type="text/javascript">
+		            document.getElementById("age1").style.display = "none";
+					document.getElementById("age2").style.display = "none";
+					document.getElementById("state1").style.display = "none";
+					document.getElementById("state2").style.display = "none";
+				</script>
             </tr>
 </table>
 

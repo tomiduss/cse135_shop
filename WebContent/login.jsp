@@ -60,6 +60,7 @@
                 rs = statement.executeQuery("SELECT * FROM shop_user WHERE username='" + username + "'");
                 if (rs.next()) {
                 	session.setAttribute("username", username);
+                	if(username.equals("demo")) session.setAttribute("demo", true);
                 	session.setAttribute("owner", rs.getBoolean("owner"));
                 	session.setAttribute("id", rs.getInt("id"));
                 	

@@ -2,23 +2,35 @@
 <%-- Import the java.sql package --%>
 <%@ page import="java.sql.*"%>
 <%@ page import="java.util.Calendar"%>
+<%@ page import="java.io.Writer"%>
+<%@ page import="java.io.BufferedWriter"%>
+<%@ page import="java.io.IOException"%>
+<%@ page import="java.io.FileWriter"%>
 <jsp:include page="/menu.jsp" />
+
+
+<head>
+</head>
+
+<body>
 <%-- -------- Open Connection Code -------- --%>
 <%
 	Connection conn = null;
 	PreparedStatement pstmt = null;
 	ResultSet rs = null;
-
+	ResultSet log_rs = null;
+	
 	try {
-	    // Registering Postgresql JDBC driver with the DriverManager
-	    Class.forName("org.postgresql.Driver");
+        // Registering Postgresql JDBC driver with the DriverManager
+        Class.forName("org.postgresql.Driver");
 
-	    // Open a connection to the database using DriverManager
-	    conn = DriverManager.getConnection(
-	        "jdbc:postgresql://localhost/postgres?" +
-	        "user=postgres&password=leviathan");
-		String action = request.getParameter("action");
+        // Open a connection to the database using DriverManager
+        conn = DriverManager.getConnection(
+            "jdbc:postgresql://localhost/postgres?" +
+            "user=postgres&password=leviathan");
 		
+		String action = request.getParameter("action");
+
 		//CONFIRMATION
 		if(action != null && action.equals("confirm")){
 			
@@ -32,7 +44,47 @@
 			}else{
 				session_error = true;
 			}
-
+			
+			//Create log for purchase
+			statement = conn.prepareStatement("SELECT shop_user.state, product.categoryid, (product.list_price * cart.quantity) AS amount FROM cart JOIN product ON (cart.productsku = product.sku) JOIN shop_user ON (cart.userid = shop_user.id) WHERE cart.userid = ?");
+			if (user_id != null && user_id != 0){
+				statement.setInt(1, user_id);
+				log_rs = statement.executeQuery();
+			}else{
+				session_error = true;
+			}
+			
+			//Put results in to log database
+			while(log_rs.next()) {
+			
+			conn.setAutoCommit(false);
+			pstmt = conn.prepareStatement("INSERT INTO log(date, state, categoryid, amount) VALUES (?,?,?,?)");
+			
+			//Prepare and set timestamp
+			java.util.Date log_date = new java.util.Date(System.currentTimeMillis());
+			java.sql.Timestamp log_timestamp = new java.sql.Timestamp(log_date.getTime());
+			pstmt.setTimestamp(1, log_timestamp);
+			
+			//State
+			String state = log_rs.getString("state");
+			pstmt.setString(2, state);
+			
+			//Category id
+			int categoryid = log_rs.getInt("categoryid");
+			pstmt.setInt(3, categoryid);
+			
+			//Amount
+			int amount = log_rs.getInt("amount");
+			pstmt.setInt(4, amount);
+			
+			pstmt.executeUpdate();
+			
+			// Commit transaction
+			conn.commit();
+	        conn.setAutoCommit(true);
+			
+			}
+	        
 			//Get user info
 	       	PreparedStatement uistmt = conn.prepareStatement("select * from shop_user where id = ? LIMIT 1");
 	       	uistmt.setInt(1, user_id);
@@ -226,10 +278,12 @@
 		//Close connection code 
     	// Close the ResultSet
     	if(rs != null) rs.close();
+		
+    	if(log_rs != null) log_rs.close();
 
     	// Close the Connection
     	conn.close();
-	} catch (SQLException e) {
+	} catch (Exception e) {
     	// Wrap the SQL exception in a runtime exception to propagate
     	// it upwards
     	throw new RuntimeException(e);
@@ -243,6 +297,12 @@
             	rs.close();
         	} catch (SQLException e) { } // Ignore
         	rs = null;
+    	}
+    	if (log_rs != null) {
+        	try {
+            	log_rs.close();
+        	} catch (SQLException e) { } // Ignore
+        	log_rs = null;
     	}
     	if (pstmt != null) {
         	try {
@@ -258,4 +318,5 @@
     }
 }
 %>
+</body>
 </html>
